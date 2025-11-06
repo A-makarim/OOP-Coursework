@@ -1,0 +1,26 @@
+# Processed Data Directory
+
+This directory is designated for storing the processed dataset that is ready for training and evaluation in the COMP0213 Object Oriented Programming for Robotics and AI coursework project. The processed data is essential for the machine learning models used in grasp planning and evaluation.
+
+## Requirements
+
+To ensure the successful processing of data, the following requirements must be met:
+
+1. **Data Format**: The raw data must be in a compatible format (e.g., CSV, JSON) that can be easily processed by the preprocessing scripts.
+
+2. **Preprocessing Scripts**: The `src/data/preprocess.py` script should be utilized to perform necessary preprocessing steps, including:
+   - Normalization of features
+   - Feature extraction
+   - Data augmentation (if applicable)
+
+3. **Directory Structure**: The processed data should be organized in a clear and consistent manner, with appropriate naming conventions to facilitate easy access and understanding.
+
+4. **Documentation**: Each processed dataset should be accompanied by a README or metadata file that describes the contents, processing steps taken, and any relevant parameters used during preprocessing.
+
+5. **Version Control**: It is recommended to maintain version control of the processed datasets to track changes and ensure reproducibility of results.
+
+## Usage
+
+Once the data has been processed, it can be utilized in the training phase of the machine learning models. The processed datasets will be loaded by the `src/data/loader.py` script for training and evaluation purposes.
+
+Ensure that all processed data files are stored in this directory before initiating the training process.

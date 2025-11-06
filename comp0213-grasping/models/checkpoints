@@ -1,0 +1,17 @@
+# Checkpoints Directory
+
+This directory is designated for storing model checkpoints during the training process of the machine learning model used for grasp success classification. 
+
+## Purpose
+
+- **Model Checkpoints**: Save the state of the model at various points during training to allow for recovery and evaluation later.
+- **Evaluation**: Checkpoints can be used to assess model performance on validation datasets and for inference in the grasp planning process.
+
+## Usage
+
+- Ensure that checkpoints are saved periodically during training to avoid loss of progress.
+- Use the saved checkpoints for fine-tuning or further training as needed.
+
+## Note
+
+This directory should be monitored for storage space, as model checkpoints can consume significant disk space over time.
