@@ -64,26 +64,29 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 # Gripper-specific configuration parameters
 GRIPPER_CONFIG = {
     "pr2": {
-        "cuboid_radius": 0.25,
-        "cylinder_radius": 0.22,
-        "radius_variation": (-0.05, 0.05),
+        "open_pos": 0.5,
+        "close_pos": 0.0,
+
+        "cuboid_radius": 0.28,
+        "cylinder_radius": 0.29,
+        "radius_variation": (-0.1, 0.1),
         "y_offset": (-0.05, 0.05),
         "z_base_offset": +0,
-        "z_variation": (-0.1, 0.1),
-        "roll_range": (-0.5, 0.5),
-        "approach_distance": 0.0  # PR2 doesn't need approach phase
+        "z_variation": (-0.2, 0.2),
+        "roll_range": (-math.pi, math.pi),
+        "approach_distance": 0.4  
     },
     "sdh": {
         "open_pos": -0.5,
         "close_pos": 0.0,   
         "cuboid_radius": 0.16,        # Closer approach for SDH (3-finger gripper)
         "cylinder_radius": 0.16,      # Closer approach for cylinder
-        "radius_variation": (-0.02, 0.02),  # Smaller variation for tighter control
+        "radius_variation": (-0.05, 0.05),  # Smaller variation for tighter control
         "y_offset": (-0.03, 0.03),    # Smaller Y offset
         "z_base_offset": + 0,
         "z_variation": (-0.2, 0.2), # Slightly smaller Z variation
-        "roll_range": (-0.4, 0.4),     # Slightly smaller roll range
-        "approach_distance": 0.10  # SDH needs to approach from 15cm away to avoid collisions
+        "roll_range": (-math.pi, math.pi),     # Slightly smaller roll range
+        "approach_distance": 0.4  # SDH needs to approach from 15cm away to avoid collisions
     }
 }
 
@@ -252,7 +255,7 @@ def generate_data_for_shape(object_type="cuboid", num_grasps=50, gripper_type="p
     and success logic to GripperEvaluator from evaluate.py.
     """
 
-    p.connect(p.DIRECT)
+    p.connect(p.GUI)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     p.resetSimulation()
     p.setGravity(0, 0, -9.81)
