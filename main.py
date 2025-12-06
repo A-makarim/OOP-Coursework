@@ -252,7 +252,7 @@ def generate_data_for_shape(object_type="cuboid", num_grasps=50, gripper_type="p
     and success logic to GripperEvaluator from evaluate.py.
     """
 
-    p.connect(p.GUI)
+    p.connect(p.DIRECT)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     p.resetSimulation()
     p.setGravity(0, 0, -9.81)
@@ -399,6 +399,7 @@ def generate_data_for_shape(object_type="cuboid", num_grasps=50, gripper_type="p
             delta_z,
             success_code
         ]
+        print([round(i, 2) for i in row])
         evaluator.save_to_csv(row)
 
         gripper.open_gripper()
@@ -431,7 +432,7 @@ def test_classifier(object_type, num_tests=10, gripper_type="pr2"):
     model = joblib.load(model_file)
     
     # Setup simulation
-    p.connect(p.GUI)
+    p.connect(p.DIRECT)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     p.resetSimulation()
     p.setGravity(0, 0, -9.81)
