@@ -293,29 +293,34 @@ def visualize_test_results(object_type, gripper_type="pr2"):
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0
     f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
     
+    # Precompute confidence metrics to avoid complex expressions inside f-strings
+    mean_conf = df['Confidence'].mean() if 'Confidence' in df.columns and len(df) > 0 else 0.0
+    correct_mean = correct['Confidence'].mean() if 'Confidence' in correct.columns and len(correct) > 0 else 0.0
+    incorrect_mean = incorrect['Confidence'].mean() if 'Confidence' in incorrect.columns and len(incorrect) > 0 else 0.0
+
     stats_text = f"""
     TEST RESULTS STATISTICS
     ========================
     Total Tests: {len(df)}
     Correct Predictions: {df['Match'].sum()}
     Prediction Accuracy: {accuracy:.2f}%
-    
+
     CLASSIFICATION METRICS
     ========================
     True Positives:  {tp}
     False Positives: {fp}
     True Negatives:  {tn}
     False Negatives: {fn}
-    
+
     Precision: {precision:.3f}
     Recall:    {recall:.3f}
     F1-Score:  {f1_score:.3f}
-    
+
     CONFIDENCE METRICS
     ========================
-    Mean Confidence: {df['Confidence'].mean():.3f}
-    Correct Mean:    {correct['Confidence'].mean():.3f}
-    Incorrect Mean:  {incorrect['Confidence'].mean():.3f if len(incorrect) > 0 else 0:.3f}
+    Mean Confidence: {mean_conf:.3f}
+    Correct Mean:    {correct_mean:.3f}
+    Incorrect Mean:  {incorrect_mean:.3f}
     """
     
     ax6.text(0.1, 0.5, stats_text, fontsize=10, family='monospace',

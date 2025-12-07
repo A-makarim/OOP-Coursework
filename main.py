@@ -74,7 +74,7 @@ GRIPPER_CONFIG = {
         "z_base_offset": +0,
         "z_variation": (-0.2, 0.2),
         "roll_range": (-math.pi, math.pi),
-        "approach_distance": 0.4  
+        "approach_distance": 0.1
     },
     "sdh": {
         "open_pos": -0.5,
@@ -86,7 +86,7 @@ GRIPPER_CONFIG = {
         "z_base_offset": + 0,
         "z_variation": (-0.2, 0.2), # Slightly smaller Z variation
         "roll_range": (-math.pi, math.pi),     # Slightly smaller roll range
-        "approach_distance": 0.4  # SDH needs to approach from 15cm away to avoid collisions
+        "approach_distance": 0.1 # SDH needs to approach from 15cm away to avoid collisions
     }
 }
 
@@ -255,7 +255,7 @@ def generate_data_for_shape(object_type="cuboid", num_grasps=50, gripper_type="p
     and success logic to GripperEvaluator from evaluate.py.
     """
 
-    p.connect(p.DIRECT)
+    p.connect(p.GUI)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     p.resetSimulation()
     p.setGravity(0, 0, -9.81)
@@ -493,12 +493,23 @@ def test_classifier(object_type, num_tests=10, gripper_type="pr2"):
             position[0], position[1], position[2],
             orientation_euler[0], orientation_euler[1], orientation_euler[2]
         ]]
-        predicted_success = model.predict(features)[0]
         prediction_proba = model.predict_proba(features)[0]
-        
+        # determine index of positive class (1) robustly
+        if hasattr(model, "classes_"):
+            try:
+                pos_index = list(model.classes_).index(1)
+            except ValueError:
+                pos_index = 1 if len(prediction_proba) > 1 else 0
+        else:
+            pos_index = 1 if len(prediction_proba) > 1 else 0
+
+        success_proba = prediction_proba[pos_index]
+        THRESHOLD = 0.7
+        predicted_success = 1 if success_proba >= THRESHOLD else 0
+
         print(f"  Position: ({position[0]:.3f}, {position[1]:.3f}, {position[2]:.3f})")
         print(f"  Orientation: ({orientation_euler[0]:.3f}, {orientation_euler[1]:.3f}, {orientation_euler[2]:.3f})")
-        print(f"  PREDICTED: {'SUCCESS' if predicted_success == 1 else 'FAILURE'} (confidence: {max(prediction_proba):.2%})")
+        print(f"  PREDICTED: {'SUCCESS' if predicted_success == 1 else 'FAILURE'} (confidence: {success_proba:.2%})")
         
         # EXECUTE the grasp (with approach phase if needed)
         if config["approach_distance"] > 0:
