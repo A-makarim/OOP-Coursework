@@ -593,8 +593,8 @@ def test_classifier(object_type, num_tests=10, gripper_type="pr2"):
         else:
             print(f"  [INCORRECT] Prediction did not match actual outcome")
         
-        # Store result
-        results.append({
+        # Create result row
+        result_row = {
             'Position X': position[0],
             'Position Y': position[1],
             'Position Z': position[2],
@@ -604,26 +604,25 @@ def test_classifier(object_type, num_tests=10, gripper_type="pr2"):
             'Predicted Success': predicted_success,
             'Actual Success': actual_success,
             'Match': match,
-            'Confidence': max(prediction_proba),
+            'Confidence': success_proba,
             'Delta Z': delta_z
-        })
+        }
+        
+        # Save immediately to CSV (append mode)
+        result_df = pd.DataFrame([result_row])
+        if test_num == 0 and not file_exists:
+            # First test and file doesn't exist: write with header
+            result_df.to_csv(test_results_file, mode='w', index=False, header=True)
+        else:
+            # Append without header
+            result_df.to_csv(test_results_file, mode='a', index=False, header=False)
+        
+        results.append(result_row)
         
         gripper.open_gripper()
         safe_step_simulation(30)
     
     p.disconnect()
-    
-    # Save results
-    results_df = pd.DataFrame(results)
-    
-    if file_exists:
-        existing_df = pd.read_csv(test_results_file)
-        results_df = pd.concat([existing_df, results_df], ignore_index=True)
-        print(f"\n[INFO] Appended {num_tests} tests to existing results")
-    else:
-        print(f"\n[INFO] Created new test results file")
-    
-    results_df.to_csv(test_results_file, index=False)
     
     # Print summary
     accuracy = (correct_predictions / num_tests) * 100
