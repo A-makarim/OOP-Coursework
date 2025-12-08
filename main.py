@@ -79,8 +79,8 @@ GRIPPER_CONFIG = {
     "sdh": {
         "open_pos": -0.5,
         "close_pos": 0.0,   
-        "cuboid_radius": 0.16,        # Closer approach for SDH (3-finger gripper)
-        "cylinder_radius": 0.16,      # Closer approach for cylinder
+        "cuboid_radius": 0.13,        # Closer approach for SDH (3-finger gripper)
+        "cylinder_radius": 0.13,      # Closer approach for cylinder
         "radius_variation": (-0.05, 0.05),  # Smaller variation for tighter control
         "y_offset": (-0.03, 0.03),    # Smaller Y offset
         "z_base_offset": + 0,
@@ -255,7 +255,7 @@ def generate_data_for_shape(object_type="cuboid", num_grasps=50, gripper_type="p
     and success logic to GripperEvaluator from evaluate.py.
     """
 
-    p.connect(p.GUI)
+    p.connect(p.DIRECT)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     p.resetSimulation()
     p.setGravity(0, 0, -9.81)
@@ -344,10 +344,14 @@ def generate_data_for_shape(object_type="cuboid", num_grasps=50, gripper_type="p
                 ]
                 gripper.set_position(current_pos, orientation_quat)
                 
-                # Start closing fingers halfway through approach
-                if i >= num_approach_steps // 2:
+                # SDH: Start closing at 70% through approach (later)
+                # PR2: Start closing at 50% through approach (halfway)
+                close_start_threshold = int(num_approach_steps * 0.7) if gripper_type == "sdh" else num_approach_steps // 2
+                
+                # Start closing fingers at threshold
+                if i >= close_start_threshold:
                     # Gradually close fingers
-                        close_progress = (i - num_approach_steps // 2) / (num_approach_steps // 2)
+                        close_progress = (i - close_start_threshold) / (num_approach_steps - close_start_threshold)
 
                         open_pos  = config["open_pos"]
                         close_pos = config["close_pos"]
@@ -435,7 +439,7 @@ def test_classifier(object_type, num_tests=10, gripper_type="pr2"):
     model = joblib.load(model_file)
     
     # Setup simulation
-    p.connect(p.DIRECT)
+    p.connect(p.GUI)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     p.resetSimulation()
     p.setGravity(0, 0, -9.81)
@@ -546,8 +550,12 @@ def test_classifier(object_type, num_tests=10, gripper_type="pr2"):
                 ]
                 gripper.set_position(current_pos, orientation_quat)
                 
-                if i >= num_approach_steps // 2:
-                    close_progress = (i - num_approach_steps // 2) / (num_approach_steps // 2)
+                # SDH: Start closing at 70% through approach (later)
+                # PR2: Start closing at 50% through approach (halfway)
+                close_start_threshold = int(num_approach_steps * 0.7) if gripper_type == "sdh" else num_approach_steps // 2
+                
+                if i >= close_start_threshold:
+                    close_progress = (i - close_start_threshold) / (num_approach_steps - close_start_threshold)
                     for joint_index in gripper.active_joints:
                         target_pos = -0.5 + close_progress * 1.5
                         p.setJointMotorControl2(
