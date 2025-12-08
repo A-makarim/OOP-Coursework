@@ -28,9 +28,10 @@ class GripperEvaluator:
         """
         Evaluate the success of a grasp based on delta_z logic.
         Returns (success_code, delta_z, final_position).
-          success_code = 1 if delta_z > 0.1
-                         2 if 0.05 <= delta_z <= 0.1
-                         0 otherwise
+          success_code = 1 if delta_z > 0.05 (lifted significantly)
+                         0 otherwise (failure)
+        
+        Binary classification only - no partial success.
         """
         time.sleep(0.5)
         if not p.isConnected():
@@ -42,10 +43,9 @@ class GripperEvaluator:
         final_z = final_position[2]
         delta_z = final_z - initial_z
 
-        if delta_z > 0.1:
-            success = 1   # Fully successful
-        elif 0.05 <= delta_z <= 0.1:
-            success = 2   # Almost
+        # Binary classification: success if lifted > 5cm
+        if delta_z > 0.05:
+            success = 1   # Success
         else:
             success = 0   # Failure
 

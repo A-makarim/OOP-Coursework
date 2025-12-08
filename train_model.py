@@ -10,6 +10,7 @@ import os
 import pandas as pd
 import joblib
 import matplotlib.pyplot as plt
+import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import accuracy_score, roc_curve, auc
@@ -46,10 +47,17 @@ def train_model(shape, gripper="pr2"):
 
     print(f"[INFO] Loading dataset from {csv_file}")
     data = pd.read_csv(csv_file)
+    print( f"[INFO] Loaded {len(data)} samples.")
 
     if "Success" not in data.columns:
         print("[ERROR] 'Success' column not found in CSV. Aborting.")
         return
+
+    # Convert old 3-class labels (0,1,2) to binary (0,1)
+    # success=2 (partial) is now treated as success=1
+    data["Success"] = data["Success"].apply(lambda x: 1 if x >= 1 else 0)
+    success_counts = data["Success"].value_counts().sort_index()
+    print(f"[INFO] Binary classification: {dict(success_counts)}")
 
     features = [
         "Position X", "Position Y", "Position Z",
@@ -68,6 +76,8 @@ def train_model(shape, gripper="pr2"):
     )
 
     model = RandomForestClassifier(random_state=42)
+    
+    # Standard 5-fold cross-validation (binary classification has enough samples per class)
     cv_scores = cross_val_score(
         model, X_train, y_train, cv=5, scoring='accuracy')
     print(f"[INFO] Cross-validation scores for {shape}: {cv_scores}")
@@ -92,6 +102,10 @@ def train_model(shape, gripper="pr2"):
     data.to_csv(updated_csv, index=False)
     print(f"[INFO] Wrote updated dataset with predictions to {updated_csv}")
 
+    # Create images folder for saving plots
+    images_folder = os.path.join(SCRIPT_DIR, "images")
+    os.makedirs(images_folder, exist_ok=True)
+
     # ROC curve
     y_proba = model.predict_proba(X_test)[:, 1]
     fpr, tpr, _ = roc_curve(y_test, y_proba, pos_label=1)
@@ -103,9 +117,14 @@ def train_model(shape, gripper="pr2"):
     plt.plot([0, 1], [0, 1], color='navy', linestyle='--', lw=2)
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
-    plt.title(f'ROC Curve ({shape.capitalize()})')
+    plt.title(f'ROC Curve - {gripper.upper()} {shape.capitalize()}')
     plt.legend(loc="lower right")
     plt.tight_layout()
+    
+    # Save ROC curve
+    roc_filename = os.path.join(images_folder, f"roc_curve_{gripper}_{shape}.png")
+    plt.savefig(roc_filename, dpi=300, bbox_inches='tight')
+    print(f"[INFO] Saved ROC curve to {roc_filename}")
     plt.show()
 
     # Feature importances
@@ -115,6 +134,11 @@ def train_model(shape, gripper="pr2"):
     plt.xticks(rotation=45, ha='right')
     plt.xlabel('Features')
     plt.ylabel('Importance')
-    plt.title(f'Feature Importance ({shape.capitalize()})')
+    plt.title(f'Feature Importance - {gripper.upper()} {shape.capitalize()}')
     plt.tight_layout()
+    
+    # Save feature importance plot
+    importance_filename = os.path.join(images_folder, f"feature_importance_{gripper}_{shape}.png")
+    plt.savefig(importance_filename, dpi=300, bbox_inches='tight')
+    print(f"[INFO] Saved feature importance plot to {importance_filename}")
     plt.show()

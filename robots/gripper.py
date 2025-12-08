@@ -138,9 +138,19 @@ class SDHGripper(BaseGripper):
 
         
         super().__init__(position, orientation, sdh_path)
-        fix_rot = p.getQuaternionFromEuler([0, -math.pi/2, 0])
-        p.resetBasePositionAndOrientation(self.gripper, self.position, fix_rot)
-
+        
+        # SDH URDF has non-standard coordinate frame - apply correction rotation
+        # This rotation aligns SDH's local frame with the world frame
+        urdf_correction = p.getQuaternionFromEuler([0, -math.pi/2, 0])
+        
+        # Combine the desired orientation with the URDF correction
+        corrected_orientation = p.multiplyTransforms(
+            [0, 0, 0], orientation,
+            [0, 0, 0], urdf_correction
+        )[1]
+        
+        # Apply the corrected orientation
+        p.resetBasePositionAndOrientation(self.gripper, position, corrected_orientation)
 
         
         # Set initial finger positions to be spread outward (negative values open fingers)

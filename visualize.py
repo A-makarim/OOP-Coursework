@@ -67,11 +67,28 @@ def visualize_training_data(object_type, gripper_type="pr2"):
     ax1.set_title('3D Grasp Position Distribution')
     ax1.legend()
     
+    # Use percentiles to exclude outliers (ignore extreme 5% on each side)
+    x_range = np.percentile(np.abs(df['Position X']), 95)
+    y_range = np.percentile(np.abs(df['Position Y']), 95)
+    max_range = max(x_range, y_range) * 1.2  # Add 20% margin
+    
+    ax1.set_xlim([-max_range, max_range])
+    ax1.set_ylim([-max_range, max_range])
+    
+    # Z axis using percentiles too
+    z_min = np.percentile(df['Position Z'], 5)
+    z_max = np.percentile(df['Position Z'], 95)
+    ax1.set_zlim([z_min - 0.05, z_max + 0.05])
+    
     # 2. XY Plane Heatmap
     ax2 = fig.add_subplot(2, 3, 2)
-    # Create grid for heatmap
-    x_bins = np.linspace(df['Position X'].min(), df['Position X'].max(), 15)
-    y_bins = np.linspace(df['Position Y'].min(), df['Position Y'].max(), 15)
+    # Create grid for heatmap centered around origin, using percentiles
+    max_xy = max(
+        np.percentile(np.abs(df['Position X']), 95),
+        np.percentile(np.abs(df['Position Y']), 95)
+    ) * 1.1
+    x_bins = np.linspace(-max_xy, max_xy, 15)
+    y_bins = np.linspace(-max_xy, max_xy, 15)
     
     heatmap_data = np.zeros((len(y_bins)-1, len(x_bins)-1))
     count_data = np.zeros((len(y_bins)-1, len(x_bins)-1))
@@ -87,11 +104,14 @@ def visualize_training_data(object_type, gripper_type="pr2"):
     with np.errstate(divide='ignore', invalid='ignore'):
         success_rate = np.where(count_data > 0, heatmap_data / count_data, np.nan)
     
-    im = ax2.imshow(success_rate, cmap='RdYlGn', aspect='auto', origin='lower',
+    im = ax2.imshow(success_rate, cmap='RdYlGn', aspect='equal', origin='lower',
                     extent=[x_bins[0], x_bins[-1], y_bins[0], y_bins[-1]], vmin=0, vmax=1)
     ax2.set_xlabel('X Position (m)')
     ax2.set_ylabel('Y Position (m)')
     ax2.set_title('Success Rate Heatmap (XY Plane)')
+    # Mark origin
+    ax2.plot(0, 0, 'k+', markersize=15, markeredgewidth=2, label='Object Center')
+    ax2.legend()
     plt.colorbar(im, ax=ax2, label='Success Rate')
     
     # 3. XZ Plane Heatmap
@@ -116,6 +136,9 @@ def visualize_training_data(object_type, gripper_type="pr2"):
     ax3.set_xlabel('X Position (m)')
     ax3.set_ylabel('Z Position (m)')
     ax3.set_title('Success Rate Heatmap (XZ Plane)')
+    # Mark object center line
+    ax3.axvline(x=0, color='black', linestyle='--', linewidth=1, alpha=0.5, label='Object Center')
+    ax3.legend()
     plt.colorbar(im2, ax=ax3, label='Success Rate')
     
     # 4. Orientation Distribution (Yaw)
