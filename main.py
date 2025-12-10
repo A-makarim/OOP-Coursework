@@ -79,13 +79,13 @@ GRIPPER_CONFIG = {
     "sdh": {
         "open_pos": -0.5,
         "close_pos": 0.0,   
-        "cuboid_radius": 0.12,        # Closer approach for SDH (3-finger gripper)
-        "cylinder_radius": 0.13,      # Closer approach for cylinder
+        "cuboid_radius": 0.11,        # Closer approach for SDH (3-finger gripper)
+        "cylinder_radius": 0.12,      # Closer approach for cylinder
         "radius_variation": (-0.05, 0.05),  # Smaller variation for tighter control
         "y_offset": (-0.03, 0.03),    # Smaller Y offset
         "z_base_offset": + 0,
-        "z_variation": (-0.1, 0.1), # Slightly smaller Z variation
-        "roll_range": (-math.pi/4, math.pi/4),     # Slightly smaller roll range
+        "z_variation": (-0.05, 0.05), # Slightly smaller Z variation
+        "roll_range": (-math.pi, math.pi),     
         "approach_distance": 0.1 # SDH needs to approach from 15cm away to avoid collisions
     }
 }
@@ -255,7 +255,7 @@ def generate_data_for_shape(object_type="cuboid", num_grasps=50, gripper_type="p
     and success logic to GripperEvaluator from evaluate.py.
     """
 
-    p.connect(p.DIRECT)
+    p.connect(p.GUI)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     p.resetSimulation()
     p.setGravity(0, 0, -9.81)
@@ -555,9 +555,16 @@ def test_classifier(object_type, num_tests=10, gripper_type="pr2"):
                 close_start_threshold = int(num_approach_steps * 0.7) if gripper_type == "sdh" else num_approach_steps // 2
                 
                 if i >= close_start_threshold:
+                    # Use the same closing logic as training!
                     close_progress = (i - close_start_threshold) / (num_approach_steps - close_start_threshold)
+                    
+                    open_pos  = config["open_pos"]
+                    close_pos = config["close_pos"]
+                    
+                    # interpolate from open → close based on close_progress
+                    target_pos = open_pos + close_progress * (close_pos - open_pos)
+                    
                     for joint_index in gripper.active_joints:
-                        target_pos = -0.5 + close_progress * 1.5
                         p.setJointMotorControl2(
                             bodyIndex=gripper.gripper,
                             jointIndex=joint_index,
@@ -627,7 +634,13 @@ def test_classifier(object_type, num_tests=10, gripper_type="pr2"):
         
         results.append(result_row)
         
+        # Reset gripper position to avoid interference with next test
         gripper.open_gripper()
+        safe_step_simulation(30)
+        
+        # Move gripper to safe spawn position (same as training)
+        spawn_z = graspable_object.get_height() + 1.0
+        gripper.set_position([0, 0, spawn_z], [0, 0, 0, 1])
         safe_step_simulation(30)
     
     p.disconnect()

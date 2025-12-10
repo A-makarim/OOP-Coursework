@@ -1,0 +1,6 @@
+Configuration,Training Samples,Training Success Rate (%),Test Samples,Test Accuracy (%),Test Precision (%),Test Recall (%),Test F1 Score
+PR2-Cuboid,2120,49.5,150,82.67,88.89,74.67,0.812
+PR2-Cylinder,1643,42.7,150,83.33,86.21,74.63,0.8
+SDH-Cuboid,1495,43.9,150,86.0,90.48,79.17,0.844
+SDH-Cylinder,4512,41.5,150,87.33,87.27,80.0,0.835
+Total/Average,9770,44.4,600,84.83,88.21,77.12,0.823

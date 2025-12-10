@@ -1,0 +1,66 @@
+{
+  "pr2_cuboid": {
+    "name": "PR2-Cuboid",
+    "training_samples": 2120,
+    "training_success_rate": 0.49528301886792453,
+    "test_samples": 150,
+    "test_accuracy": 0.8266666666666667,
+    "test_precision": 0.8888888888888888,
+    "test_recall": 0.7466666666666667,
+    "test_f1": 0.8115942028985508,
+    "confusion_matrix": {
+      "tp": 56,
+      "tn": 68,
+      "fp": 7,
+      "fn": 19
+    }
+  },
+  "pr2_cylinder": {
+    "name": "PR2-Cylinder",
+    "training_samples": 1643,
+    "training_success_rate": 0.42726719415702985,
+    "test_samples": 150,
+    "test_accuracy": 0.8333333333333334,
+    "test_precision": 0.8620689655172413,
+    "test_recall": 0.746268656716418,
+    "test_f1": 0.8,
+    "confusion_matrix": {
+      "tp": 50,
+      "tn": 75,
+      "fp": 8,
+      "fn": 17
+    }
+  },
+  "sdh_cuboid": {
+    "name": "SDH-Cuboid",
+    "training_samples": 1495,
+    "training_success_rate": 0.4394648829431438,
+    "test_samples": 150,
+    "test_accuracy": 0.86,
+    "test_precision": 0.9047619047619048,
+    "test_recall": 0.7916666666666666,
+    "test_f1": 0.8444444444444444,
+    "confusion_matrix": {
+      "tp": 57,
+      "tn": 72,
+      "fp": 6,
+      "fn": 15
+    }
+  },
+  "sdh_cylinder": {
+    "name": "SDH-Cylinder",
+    "training_samples": 4512,
+    "training_success_rate": 0.41511524822695034,
+    "test_samples": 150,
+    "test_accuracy": 0.8733333333333333,
+    "test_precision": 0.8727272727272727,
+    "test_recall": 0.8,
+    "test_f1": 0.8347826086956521,
+    "confusion_matrix": {
+      "tp": 48,
+      "tn": 83,
+      "fp": 7,
+      "fn": 12
+    }
+  }
+}
