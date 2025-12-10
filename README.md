@@ -1,4 +1,4 @@
-# Robotic Grasp Prediction System# How to Use This Repository
+# Gemini 2.5 Flash Accessible Robotic Grasp Prediction System# How to Use This Repository
 
 
 
